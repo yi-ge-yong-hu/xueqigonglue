@@ -83,27 +83,23 @@ h3 { font-size: 20px; margin-bottom: 10px; }
 .fallback { font-size: 52px; display: flex; align-items: center; justify-content: center; color: #fff; border-radius: 8px; }
 
 /* ---------- 地图 ---------- */
-.map-head { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 14px; font-size: 14px; color: #cfd6e0; }
-.map-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-.map-row { display: flex; gap: 10px; justify-content: center; }
-.map-cell {
-    width: 108px; height: 58px;
-    border-radius: 10px;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    background: rgba(30, 38, 54, .9);
-    border: 1px solid #3d506e;
+.map-screen {
     position: relative;
+    background-size: cover;
+    background-position: center;
+    border-radius: 14px;
+    padding: 14px 18px 18px;
+    min-height: 92vh;
 }
-.map-cell.empty { background: transparent; border: none; }
-.map-cell.cleared { border-color: #43a868; }
-.map-cell.current { border: 2px solid #ffd76e; box-shadow: 0 0 14px rgba(255,215,110,.45); }
-.map-idx { position: absolute; top: 3px; left: 7px; font-size: 11px; color: #7d8898; }
-.map-icon { font-size: 22px; }
-.rt-2 { border-color: #d4604f; }
-.rt-1 { border-color: #c9a227; }
-.map-legend { color: #7d8898; font-size: 12px; margin-bottom: 10px; text-align: center; }
-.map-adj { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
+.map-head { position: relative; z-index: 1; display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; font-size: 14px; color: #e8ecf3; text-shadow: 0 1px 4px rgba(0,0,0,.9); font-weight: 600; }
+.map-wrap { position: relative; z-index: 1; background: rgba(10, 14, 22, .55); border: 1px solid #2c3a52; border-radius: 14px; padding: 6px; margin-bottom: 10px; }
+.map-svg { width: 100%; height: auto; display: block; max-height: 46vh; }
+.map-svg text { user-select: none; }
+.map-legend { position: relative; z-index: 1; color: #c8d0dc; font-size: 12px; margin-bottom: 10px; text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,.9); }
+.ml-cur { color: #ffd76e; font-weight: bold; }
+.ml-go { color: #ffd76e; }
+.ml-done { color: #43a868; }
+.map-adj { position: relative; z-index: 1; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
 
 /* ---------- 战斗 ---------- */
 .battle-screen {

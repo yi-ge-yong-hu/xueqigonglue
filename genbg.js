@@ -343,8 +343,96 @@ function bgWin() {
     return s;
 }
 
+// ---------- 5. 地图背景: 夜色校园俯瞰 (路线图衬托) ----------
+function bgMap() {
+    var rng = rand(314159);
+    var W = 1920, H = 1080;
+    var s = '';
+    s += '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">';
+    s += '<defs>';
+    s += '<linearGradient id="msky" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#070d1e"/>' +
+        '<stop offset="0.55" stop-color="#0d1a36"/>' +
+        '<stop offset="1" stop-color="#101f42"/>' +
+        '</linearGradient>';
+    s += '<radialGradient id="mglow" cx="0.8" cy="0.2" r="0.5">' +
+        '<stop offset="0" stop-color="#ffe9b8" stop-opacity="0.28"/>' +
+        '<stop offset="1" stop-color="#ffe9b8" stop-opacity="0"/>' +
+        '</radialGradient>';
+    s += '<linearGradient id="mground" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#0b1526"/>' +
+        '<stop offset="1" stop-color="#060d1a"/>' +
+        '</linearGradient>';
+    s += '<linearGradient id="mroad" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="#1b2740"/>' +
+        '<stop offset="1" stop-color="#111a2c"/>' +
+        '</linearGradient>';
+    s += '</defs>';
+    // 天空
+    s += '<rect width="' + W + '" height="' + H + '" fill="url(#msky)"/>';
+    s += '<rect width="' + W + '" height="' + H + '" fill="url(#mglow)"/>';
+    // 星星
+    s += stars(rng, 110, 0, W, 0, 430, '#ffffff', 0.18);
+    s += stars(rng, 40, 0, W, 0, 430, '#9fd0ff', 0.25);
+    // 月亮
+    s += '<circle cx="1560" cy="180" r="62" fill="#ffe9b8" fill-opacity="0.85"/>';
+    s += '<circle cx="1540" cy="165" r="50" fill="#fdf3d8" fill-opacity="0.45"/>';
+    // 中央主路 (纵向, 微微弯曲) - 低对比, 地图节点叠加其上
+    s += '<path d="M960 1080 Q 940 780 930 560 Q 920 360 950 0 L 1010 0 Q 990 360 1000 560 Q 1010 780 990 1080 Z" fill="url(#mroad)"/>';
+    s += '<path d="M955 1080 Q 938 780 930 560 Q 922 360 950 0 L 968 0 Q 950 360 952 560 Q 960 780 972 1080 Z" fill="#1f2d4a" fill-opacity="0.55"/>';
+    // 路缘虚线
+    s += '<path d="M920 1000 Q 908 760 900 560 Q 892 360 918 60 M1004 1000 Q 996 760 1004 560 Q 1010 360 984 60" stroke="#3a4c74" stroke-opacity="0.5" stroke-width="3" fill="none" stroke-dasharray="26 30"/>';
+    // 侧路
+    s += '<path d="M400 640 L 1480 640" stroke="#1b2740" stroke-width="60" stroke-linecap="round" stroke-opacity="0.6"/>';
+    s += '<path d="M700 880 L 1240 880" stroke="#1b2740" stroke-width="44" stroke-linecap="round" stroke-opacity="0.5"/>';
+    // 两侧建筑群
+    var blocks = [
+        [60, 430, 230, 150, '#16294e'], [330, 400, 180, 180, '#132444'],
+        [560, 420, 150, 140, '#16294e'], [70, 620, 200, 120, '#132444'],
+        [310, 660, 170, 110, '#16294e'], [1250, 420, 200, 150, '#132444'],
+        [1500, 400, 190, 170, '#16294e'], [1680, 620, 180, 120, '#132444'],
+        [1280, 660, 150, 110, '#16294e']
+    ];
+    blocks.forEach(function (b) {
+        s += '<rect x="' + b[0] + '" y="' + b[1] + '" width="' + b[2] + '" height="' + b[3] + '" rx="6" fill="' + b[4] + '"/>';
+        // 窗户
+        var cw = Math.floor(b[2] / 58), ch = Math.floor(b[3] / 62);
+        for (var r = 0; r < ch; r++) for (var c = 0; c < cw; c++) {
+            if (rng() < 0.45) {
+                s += '<rect x="' + (b[0] + 14 + c * 58) + '" y="' + (b[1] + 16 + r * 62) + '" width="16" height="18" rx="2" fill="#ffd76e" fill-opacity="' + (0.22 + rng() * 0.4).toFixed(2) + '"/>';
+            }
+        }
+    });
+    // 树木剪影
+    var trees = [[140, 560, 60], [520, 560, 70], [1450, 570, 65], [1620, 560, 55], [1050, 430, 70], [880, 700, 62]];
+    trees.forEach(function (t) {
+        s += '<ellipse cx="' + t[0] + '" cy="' + (t[1] - t[2] * 0.6) + '" rx="' + t[2] * 0.62 + '" ry="' + t[2] + '" fill="#0b1930"/>';
+        s += '<rect x="' + (t[0] - 6) + '" y="' + (t[1] - 7) + '" width="12" height="34" fill="#081226"/>';
+    });
+    // 路灯
+    for (var lp = 0; lp < 5; lp++) {
+        var lx = 820 + lp * 70, ly = 160 + lp * 170;
+        s += '<circle cx="' + lx + '" cy="' + ly + '" r="4" fill="#ffe9b8" fill-opacity="0.9"/>';
+        s += '<circle cx="' + lx + '" cy="' + ly + '" r="26" fill="#ffe9b8" fill-opacity="0.08"/>';
+    }
+    // 地面
+    s += '<rect y="700" width="' + W + '" height="' + (H - 700) + '" fill="url(#mground)"/>';
+    // 地面细节
+    s += '<ellipse cx="960" cy="900" rx="560" ry="120" fill="#2f5fc0" fill-opacity="0.05"/>';
+    s += '<path d="M0 780 Q 480 750 960 780 T 1920 780 M0 980 Q 480 950 960 980 T 1920 980" stroke="#1a2b4c" stroke-opacity="0.4" stroke-width="2" fill="none"/>';
+    // 主楼(远端上方, 半透明衬托)
+    s += '<rect x="880" y="120" width="160" height="150" rx="4" fill="#16294e" fill-opacity="0.75"/>';
+    s += '<path d="M900 120 L960 70 L1020 120 Z" fill="#1f3562" fill-opacity="0.8"/>';
+    s += '<circle cx="960" cy="140" r="12" fill="#0c1830" stroke="#ffd76e" stroke-width="2" stroke-opacity="0.7"/>';
+    s += '<rect x="900" y="190" width="18" height="20" fill="#ffd76e" fill-opacity="0.5"/>';
+    s += '<rect x="945" y="190" width="18" height="20" fill="#ffd76e" fill-opacity="0.3"/>';
+    s += '<rect x="990" y="190" width="18" height="20" fill="#ffd76e" fill-opacity="0.6"/>';
+    s += '</svg>';
+    return s;
+}
+
 // ---------- 生成 ----------
-var bgs = { 'title': bgTitle, 'battle': bgBattle, 'boss': bgBoss, 'win': bgWin };
+var bgs = { 'title': bgTitle, 'battle': bgBattle, 'boss': bgBoss, 'win': bgWin, 'map': bgMap };
 if (!fs.existsSync(web)) fs.mkdirSync(web, { recursive: true });
 Object.keys(bgs).forEach(function (name) {
     var file = path.join(web, name + '.svg');

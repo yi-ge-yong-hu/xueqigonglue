@@ -50,7 +50,6 @@
     var TYPE_CLASS = ['ct-know', 'ct-moral', 'ct-social', 'ct-stress'];
     var TYPE_COLOR = ['#4a7fd4', '#43a868', '#c9a227', '#d4604f'];
     var TYPE_ICON = ['📘', '💚', '💼', '🔥'];
-    var ROOM_ICON = ['⚔️', '⭐', '👹', '❓', '☕', '🛒', '🎁'];
     var ROOM_NAME = ['战斗', '精英', '首领', '事件', '休息', '商店', '宝箱'];
 
     function cardHTML(c, id, opts) {
@@ -229,42 +228,104 @@
     }
 
     // ================= 地图 =================
+    function mapSvg(run, adjs) {
+        // 布局: viewBox 960x520, 节点按 (col,row) 定位, 3 行
+        var C = run.rooms.reduce(function (m, r) { return Math.max(m, r.col + 1); }, 0);
+        var W = 960, H = 500;
+        var MX = 90, MY = 90;
+        var cw = (W - MX * 2) / Math.max(1, C - 1);
+        var px = function (col) { return MX + col * cw; };
+        var py = function (row) { return MY + row * ((H - MY * 2) / 2); };
+
+        // 房间类型样式
+        var STYLE = {
+            0: { color: '#d4604f', icon: '⚔️', label: '战斗' },    // battle
+            1: { color: '#c9a227', icon: '⭐', label: '精英' },    // elite
+            2: { color: '#ffd76e', icon: '👹', label: '首领' },    // boss
+            3: { color: '#4a7fd4', icon: '❓', label: '事件' },    // event
+            4: { color: '#43a868', icon: '☕', label: '休息' },    // rest
+            5: { color: '#7ab8ff', icon: '🛒', label: '商店' },    // shop
+            6: { color: '#c58aff', icon: '🎁', label: '宝箱' }     // chest
+        };
+
+        // 连接线 (去重: 只画一次每条边)
+        var edges = {};
+        var paths = '';
+        run.rooms.forEach(function (r, i) {
+            r.next.forEach(function (j) {
+                var k = i < j ? i + ':' + j : j + ':' + i;
+                if (edges[k] || !run.rooms[j]) return;
+                edges[k] = true;
+                var a = run.rooms[i], b = run.rooms[j];
+                var x1 = px(a.col), y1 = py(a.row), x2 = px(b.col), y2 = py(b.row);
+                var xm = (x1 + x2) / 2, ym = (y1 + y2) / 2;
+                var bulge = (y2 - y1) * 0.28; // 让竖线有弧线感
+                var stroke = '#33415e';
+                var width = 3;
+                if (a.cleared && b.cleared) { stroke = '#43a868'; width = 3.5; }
+                else if (adjs.indexOf(i) >= 0 || adjs.indexOf(j) >= 0) { stroke = '#ffd76e'; width = 4; }
+                paths += '<path d="M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
+                    ' Q ' + xm.toFixed(1) + ' ' + (ym - bulge).toFixed(1) + ' ' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
+                    '" fill="none" stroke="' + stroke + '" stroke-width="' + width + '" stroke-opacity="0.8"/>';
+            });
+        });
+
+        // 节点
+        var nodes = '';
+        run.rooms.forEach(function (r, i) {
+            var x = px(r.col), y = py(r.row);
+            var st = STYLE[r.type] || STYLE[0];
+            var isCur = (i === run.cur);
+            var canGo = adjs.indexOf(i) >= 0;
+            var cleared = r.cleared;
+
+            if (isCur) {
+                // 当前位置: 脉冲光环 + 金色描边
+                nodes += '<circle cx="' + x + '" cy="' + y + '" r="30" fill="none" stroke="#ffd76e" stroke-width="2" stroke-opacity="0.5">' +
+                    '<animate attributeName="r" values="24;34;24" dur="1.8s" repeatCount="indefinite"/>' +
+                    '<animate attributeName="stroke-opacity" values="0.6;0.15;0.6" dur="1.8s" repeatCount="indefinite"/></circle>';
+                nodes += '<circle cx="' + x + '" cy="' + y + '" r="22" fill="#ffd76e" fill-opacity="0.18" stroke="#ffd76e" stroke-width="2.5"/>';
+            } else if (canGo) {
+                // 可前往: 高亮发光
+                nodes += '<circle cx="' + x + '" cy="' + y + '" r="23" fill="#ffd76e" fill-opacity="0.12" stroke="#ffd76e" stroke-width="2.5"/>';
+                nodes += '<circle cx="' + x + '" cy="' + y + '" r="17" fill="none" stroke="#ffd76e" stroke-width="1" stroke-opacity="0.6"/>';
+            } else if (cleared) {
+                nodes += '<circle cx="' + x + '" cy="' + y + '" r="20" fill="#1a2438" fill-opacity="0.9" stroke="#43a868" stroke-width="2"/>';
+            } else {
+                nodes += '<circle cx="' + x + '" cy="' + y + '" r="20" fill="#222c40" stroke="#46597a" stroke-width="2"/>';
+            }
+            // 图标
+            var icon = cleared ? '✓' : st.icon;
+            var fontSize = cleared ? 16 : (icon.length > 2 ? 20 : 22);
+            var iconColor = cleared ? '#43a868' : (isCur || canGo ? '#ffd76e' : '#cfd6e0');
+            nodes += '<text x="' + x + '" y="' + (y + fontSize * 0.36) + '" text-anchor="middle" font-size="' + fontSize + '" fill="' + iconColor + '">' + icon + '</text>';
+        });
+
+        return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" class="map-svg">' +
+            '<defs><filter id="pathglow" x="-40%" y="-40%" width="180%" height="180%">' +
+            '<feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>' +
+            '<g filter="url(#pathglow)">' + paths + '</g>' + nodes + '</svg>';
+    }
+
     function screenMap() {
         var run = SG.state.run;
         var P = run.P;
-        var C = run.rooms.reduce(function (m, r) { return Math.max(m, r.col + 1); }, 0);
-        var grid = [];
-        for (var row = 0; row < 3; row++) {
-            var line = '<div class="map-row">';
-            for (var col = 0; col < C; col++) {
-                var idx = findRoom(run.rooms, row, col);
-                if (idx < 0) { line += '<div class="map-cell empty"></div>'; continue; }
-                var rm = run.rooms[idx];
-                var cls = 'map-cell';
-                if (idx === run.cur) cls += ' current';
-                else if (rm.cleared) cls += ' cleared';
-                cls += ' rt-' + rm.type;
-                var label = rm.cleared ? '✓' : ROOM_ICON[rm.type];
-                line += '<div class="' + cls + '"><div class="map-idx">' + (idx + 1) + '</div><div class="map-icon">' + label + '</div></div>';
-            }
-            line += '</div>';
-            grid.push(line);
-        }
         var adjs = SG.mapAdjs();
-        var adjBtns = adjs.map(function (t, i) {
-            return '<button class="btn btn-small" data-go="' + i + '">前往「' + ROOM_NAME[run.rooms[t].type] + '」</button>';
-        }).join(' ');
+        var svgMap = mapSvg(run, adjs);
         var msgs = (SG.state.unlockMsgs || []).map(function (m) { return '<div class="log-msg">' + m + '</div>'; }).join('');
-        return '<div class="screen">' +
+        return '<div class="screen map-screen" style="background-image:url(assets/bg/map.svg)">' +
+            '<div class="battle-overlay"></div>' +
             '<div class="map-head">' +
             '<span>🗓️ 阶段 ' + (run.stage + 1) + '/4</span>' +
             '<span>❤️ 心态 ' + P.morale + '</span>' +
             '<span>😰 压力 ' + P.stress + ' (' + zoneNameOf(P) + ')</span>' +
             '<span>💰 金币 ' + P.gold + '</span>' +
             '</div>' +
-            '<div class="map-grid">' + grid.join('') + '</div>' +
-            '<div class="map-legend">★当前 ●已探索 ○未探索</div>' +
-            '<div class="map-adj">' + (adjBtns || '<span class="dim">已到尽头, 击败首领进入下一阶段</span>') + '</div>' +
+            '<div class="map-wrap">' + svgMap + '</div>' +
+            '<div class="map-legend">⭐精英 &nbsp;👹首领 &nbsp;❓事件 &nbsp;☕休息 &nbsp;🛒商店 &nbsp;🎁宝箱 &nbsp;<span class="ml-cur">●当前位置</span> &nbsp;<span class="ml-go">●可前往</span> &nbsp;<span class="ml-done">✓已通关</span></div>' +
+            '<div class="map-adj">' + (adjs.length ? adjs.map(function (t) {
+                return '<button class="btn btn-small" data-go="' + t + '">前往「' + ROOM_NAME[run.rooms[t].type] + '」</button>';
+            }).join(' ') : '<span class="dim">已到尽头, 击败首领进入下一阶段</span>') + '</div>' +
             (msgs ? '<div class="log-box small">' + msgs + '</div>' : '') +
             '<div class="row-center"><button class="btn" data-action="status">📋 查看状态 (S)</button></div>' +
             '</div>';
@@ -649,11 +710,6 @@
     }
 
     // ================= 辅助 =================
-    function findRoom(rooms, row, col) {
-        for (var i = 0; i < rooms.length; i++)
-            if (rooms[i].row === row && rooms[i].col === col) return i;
-        return -1;
-    }
     function zoneNameOf(p) { return SG.zoneName(p); }
     function zoneIdxOf(p) { return SG.zoneIdx(p); }
     function StressCapOf() { return SG.stressCap(); }
