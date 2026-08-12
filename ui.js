@@ -22,7 +22,7 @@
         artPending++;
         img.onload = function () { ART[kind][key] = true; artDone(); };
         img.onerror = function () { ART[kind][key] = false; artDone(); };
-        img.src = 'assets/' + kind + '/' + key + '.png';
+        img.src = 'assets/' + kind + '/' + key + (kind === 'cards' ? '.svg' : '.png');
     }
     function artDone() {
         artPending--;
@@ -38,8 +38,8 @@
         for (var k = 0; k < 9; k++) probe('events', 'ev' + k);
     }
     function cardArtSrc(name, id) {
-        if (ART.cards[name]) return 'assets/cards/' + name + '.png';
-        if (ART.cards['c' + id]) return 'assets/cards/c' + id + '.png';
+        if (ART.cards[name]) return 'assets/cards/' + name + '.svg';
+        if (ART.cards['c' + id]) return 'assets/cards/c' + id + '.svg';
         return null;
     }
     function enemyArtSrc(id) { return ART.enemies['e' + id] ? 'assets/enemies/e' + id + '.png' : null; }
