@@ -48,6 +48,34 @@
             pierce: pi, special: sp, aoe: 0, up: 0 });
     }
 
+    // ================= 外部数据覆盖 (编辑器生成) =================
+    function getOverride() {
+        if (typeof window !== 'undefined' && window.SEM_OVERRIDE) return window.SEM_OVERRIDE;
+        return null;
+    }
+    function applyOverride() {
+        var ov = getOverride();
+        if (!ov || !ov.cards || !ov.cards.length) return;
+        CARDS.length = 0; GEN_POOL.length = 0;
+        ov.cards.forEach(function (c) {
+            CARDS.push({ name: c.name, desc: c.desc, type: c.type, cost: c.cost, dmg: c.dmg,
+                shield: c.shield, heal: c.heal, stUp: c.stUp, stDown: c.stDown, draw: c.draw,
+                energy: c.energy, debuff: c.debuff, debVal: c.debVal, pierce: c.pierce,
+                special: c.special, aoe: c.aoe, up: 0 });
+        });
+        if (ov.genPool) ov.genPool.forEach(function (i) { GEN_POOL.push(i); });
+        if (ov.starter) STARTER_DECK = ov.starter.slice();
+        if (ov.courses) {
+            gMath.length = 0; gLit.length = 0; gBiz.length = 0; gArt.length = 0; gEng.length = 0; gPe.length = 0;
+            var map = { gMath: gMath, gLit: gLit, gBiz: gBiz, gArt: gArt, gEng: gEng, gPe: gPe };
+            for (var k in map) if (ov.courses[k]) ov.courses[k].forEach(function (i) { map[k].push(i); });
+        }
+    }
+    function getEnemiesOverride() {
+        if (typeof window !== 'undefined' && window.SEM_ENEMIES) return window.SEM_ENEMIES;
+        return null;
+    }
+
     function initCards() {
         CARDS.length = 0; GEN_POOL.length = 0;
         STARTER_DECK = [0, 0, 0, 1, 1, 2, 3, 4, 5, 6];
@@ -153,6 +181,7 @@
         addCard('投毒', '造成2点伤害,施加3层中毒(每回合3伤/层,逐层衰减)。', CT_KNOW, 1, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, SP_POISON); GEN_POOL.push(CARDS.length - 1); //55
         addCard('催眠曲', '造成3点伤害,使目标昏睡1回合(跳过行动)。', CT_SOCIAL, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, SP_SLEEP); GEN_POOL.push(CARDS.length - 1); //56
         addCard('连续出招', '造成4点伤害。本回合连击数>=3时再+6。', CT_KNOW, 1, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, SP_COMBO); GEN_POOL.push(CARDS.length - 1); //57
+        applyOverride();
     }
 
     function cardName(c) { return c.up ? (c.name + '+') : c.name; }
@@ -291,6 +320,12 @@
         else if (kind === 7) { e.name = '吃瓜同桌'; e.id = 7; base = 32; }
         else if (kind === 8) { e.name = '社团面试(精英)'; e.id = 8; base = 110; }
         else { e.name = '毕业答辩(隐藏BOSS)'; e.id = 9; base = 180; }
+
+        var eov = getEnemiesOverride();
+        if (eov && eov[e.id]) {
+            if (eov[e.id].name) e.name = eov[e.id].name;
+            if (eov[e.id].base > 0) base = Math.floor(eov[e.id].base);
+        }
 
         var isNormal = (e.id <= 2 || e.id === 6 || e.id === 7);
         var isElite = (e.id === 3 || e.id === 4 || e.id === 8);
@@ -1606,6 +1641,17 @@
         // 卡牌
         initCards: initCards, cardName: cardName, cloneCard: cloneCard,
         upgradeCard: upgradeCard, canUpgrade: canUpgrade,
+        // 编辑器数据快照 (供后台编辑器读取)
+        dumpCards: function () {
+            return { cards: CARDS, genPool: GEN_POOL.slice(), starter: STARTER_DECK.slice(),
+                courses: { gMath: gMath.slice(), gLit: gLit.slice(), gBiz: gBiz.slice(),
+                gArt: gArt.slice(), gEng: gEng.slice(), gPe: gPe.slice() } };
+        },
+        dumpEnemies: function (factor) {
+            var f = factor || 1, out = [];
+            for (var k = 0; k < 10; k++) { var e = makeEnemy(k, f); out.push({ id: e.id, name: e.name, base: e.maxHp }); }
+            return out;
+        },
         // 流程
         loadMeta: loadMeta, saveMeta: saveMeta,
         startRun: startRun, backToTitle: backToTitle,

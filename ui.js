@@ -181,6 +181,10 @@
             { name: '复读生', desc: '压力惩罚阈值+10', lock: !M.rep, hint: '失败3次解锁' },
             { name: '交换生', desc: '战斗开始金币+10,多抽1张', lock: !M.exch, hint: '难度5以上通关解锁' }
         ];
+        if (window.SEM_CHARS) chars = chars.map(function (c, i) {
+            var o = window.SEM_CHARS[i];
+            return o ? { name: o.name || c.name, desc: o.desc || c.desc, lock: c.lock, hint: c.hint } : c;
+        });
         var html = '<div class="screen"><h2>🎒 选择角色</h2><div class="grid4">';
         chars.forEach(function (c, i) {
             var src = charArtSrc(i);
