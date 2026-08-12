@@ -155,7 +155,7 @@
         var chars = ['新生(默认)'];
         if (M.trans) chars.push('转学生');
         if (M.exch) chars.push('交换生');
-        return '<div class="screen screen-title" style="background-image:url(assets/bg/title.png)">' +
+        return '<div class="screen screen-title" style="background-image:url(assets/bg/title.svg)">' +
             '<div class="title-overlay"></div>' +
             '<div class="title-box">' +
             '<h1>《学期攻略》</h1>' +
@@ -271,9 +271,9 @@
         var B = SG.state.battle;
         var P = SG.state.run.P;
         if (!B) return '';
-        var bg = 'battle.png';
-        if (B.es.some(function (e) { return e.id === 5 || e.id === 9; })) bg = 'boss.png';
-        if (B.firstTurn && B.showBg) bg = B.es.some(function (e) { return e.id === 5 || e.id === 9; }) ? 'boss.png' : 'battle.png';
+        var bg = 'battle.svg';
+        if (B.es.some(function (e) { return e.id === 5 || e.id === 9; })) bg = 'boss.svg';
+        if (B.firstTurn && B.showBg) bg = B.es.some(function (e) { return e.id === 5 || e.id === 9; }) ? 'boss.svg' : 'battle.svg';
 
         var enemyRow = '<div class="enemy-row">';
         B.es.forEach(function (e, i) {
@@ -473,13 +473,13 @@
         if (!bi) return '';
         var run = SG.state.run;
         if (bi.stage < 3) {
-            return '<div class="screen" style="background-image:url(assets/bg/boss.png)"><div class="battle-overlay"></div>' +
+            return '<div class="screen" style="background-image:url(assets/bg/boss.svg)"><div class="battle-overlay"></div>' +
                 '<div class="center-box"><h2>👹 首领房</h2>' +
                 '<div class="event-text">一股强大的压迫感袭来... 击败首领, 才能进入下一阶段!</div>' +
                 '<button class="btn btn-big" data-action="bossfight">⚔️ 迎战首领</button></div></div>';
         }
         var hidden = SG.courseCount(run.P) >= 2;
-        var html = '<div class="screen" style="background-image:url(assets/bg/boss.png)"><div class="battle-overlay"></div>' +
+        var html = '<div class="screen" style="background-image:url(assets/bg/boss.svg)"><div class="battle-overlay"></div>' +
             '<div class="center-box"><h2>📝 期末考试</h2>' +
             '<div class="event-text">最终挑战! 撑过这一场, 学期就结束了!</div>';
         if (hidden) {
@@ -516,7 +516,7 @@
             ' &nbsp; 💰 金币: ' + P.gold + ' &nbsp; 🂠 卡组: ' + P.deck.length + '张 &nbsp; 🎓 课程: ' +
             SG.courseCount(P) + '门</div>' : '';
         if (win) {
-            return '<div class="screen win-screen" style="background-image:url(assets/bg/win.png)"><div class="battle-overlay"></div>' +
+            return '<div class="screen win-screen" style="background-image:url(assets/bg/win.svg)"><div class="battle-overlay"></div>' +
                 '<div class="center-box"><h2>🎓 期末考试通过! 学期结束!</h2>' + stats +
                 '<div class="event-text">学期结算: +100学分 (当前学分: ' + SG.M.credit + ')</div>' +
                 (msgs ? '<div class="log-box small">' + msgs + '</div>' : '') +
